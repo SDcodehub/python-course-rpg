@@ -23,12 +23,13 @@ jobs:
     #     run: |
     #       pip install build
     #   - name: Build python package
+    # 
       - run: |
           /bin/bash -x run.sh install
           /bin/bash -x run.sh build
           /bin/bash -x run.sh publish:test
-        # env:
-        #   TEST_PYPI_TOKEN:${{ secrets.TEST_PYPI_TOKEN}}
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN}}
     #   - name: Upload wheel and sdist
     #     uses: actions/upload-artifact@v3
     #     with:
