@@ -8,7 +8,7 @@ package_demo = ["*.json"]
 
 [project]
 name = "python-course-rpg"
-version = "0.0.8"
+version = "0.0.9"
 authors = [{ name = "Sagar", email = "some-email@gmail.com" }]
 description = "My package description"
 readme = "README.md"

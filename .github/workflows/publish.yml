@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
       - name: Set up Python 3.8
         uses: actions/setup-python@v3
         with:
@@ -23,53 +25,74 @@ jobs:
     #     run: |
     #       pip install build
     #   - name: Build python package
-    # 
-      - run: |
+      - name: Tag with release version
+        run: |
+          git tag some-tag
+      - name: Install Python dependencies
+        run: |
           /bin/bash -x run.sh install
+      - name: Static code quality check
+        run: |
+          /bin/bash -x run.sh lint:ci
+      - name: Build Python package
+        run: |
           /bin/bash -x run.sh build
+      - name: Publish to Test PyPI
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
           /bin/bash -x run.sh publish:test
         env:
           TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN}}
+      - name: Publish to Prod PyPI
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          /bin/bash -x run.sh publish:prod
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN}}
+      - name: Push tags
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git push origin --tags
     #   - name: Upload wheel and sdist
     #     uses: actions/upload-artifact@v3
     #     with:
     #       name: wheel-and-sdist
     #       path: ./dist/*
 
-#   publish:
-#     needs:
-#       - build-wheel-and-sdist
-#       - lint-format-and-static-code-checks
-#       - check-version-txt
-#     runs-on: ubuntu-latest
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Set up Python 3.8
-#         uses: actions/setup-python@v3
-#         with:
-#           python-version: 3.8
-#       - name: Download wheel and sdist
-#         uses: actions/download-artifact@v3
-#         with:
-#           name: wheel-and-sdist
-#           path: ./dist/
-#       - name: Install twine
-#         run: |
-#           pip install twine
-#       - name: Publish to TestPyPI
-#         run: |
-#           /bin/bash -x run.sh publish:test
-#         env:
-#           TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
-#       - name: Publish to Prod PyPI
-#         run: |
-#           /bin/bash -x run.sh publish:prod
-#         env:
-#           PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
-#       - name: Push tags
-#         run: |
-#           git push origin --tags
+  # publish:
+  #   needs:
+  #     - build-wheel-and-sdist
+  #     - lint-format-and-static-code-checks
+  #     - check-version-txt
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Set up Python 3.8
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: 3.8
+  #     - name: Download wheel and sdist
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: wheel-and-sdist
+  #         path: ./dist/
+  #     - name: Install twine
+  #       run: |
+  #         pip install twine
+  #     - name: Publish to TestPyPI
+  #       run: |
+  #         /bin/bash -x run.sh publish:test
+  #       env:
+  #         TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+  #     - name: Publish to Prod PyPI
+  #       run: |
+  #         /bin/bash -x run.sh publish:prod
+  #       env:
+  #         PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
+  #     - name: Push tags
+  #       run: |
+  #         git push origin --tags
 
 
 
